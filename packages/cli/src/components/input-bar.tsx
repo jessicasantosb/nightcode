@@ -36,6 +36,7 @@ export const InputBar = ({ onSubmit, disabled = false }: InputBarProps) => {
     const textarea = textareaRef.current
     if (!textarea || !command) return
 
+
     if (command.action) {
       try {
         command.action({
@@ -43,8 +44,7 @@ export const InputBar = ({ onSubmit, disabled = false }: InputBarProps) => {
         })
         textarea.setText("")
       } catch (error) {
-        // If command fails, preserve user input
-        throw error
+        console.error('Command execution failed:', error)
       }
     } else {
       textarea.setText("")

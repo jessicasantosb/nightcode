@@ -14,7 +14,10 @@ function App() {
     <box alignItems="center" justifyContent="center" width={"100%"} height={"100%"} backgroundColor={"#0D0D12"} gap={2}>
       <Header />
       <box width="100%" maxWidth={78} paddingX={2}>
-        <InputBar onSubmit={handleSubmit} />
+        <InputBar onSubmit={(text) => {
+          // TODO: implement submission handler
+          console.log('Submitted:', text)
+        }} />
       </box>
     </box>
   );
