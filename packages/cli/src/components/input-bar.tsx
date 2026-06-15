@@ -35,13 +35,19 @@ export const InputBar = ({ onSubmit, disabled = false }: InputBarProps) => {
   const handleCommand = useCallback((command: Command | undefined) => {
     const textarea = textareaRef.current
     if (!textarea || !command) return
-    textarea.setText("")
 
     if (command.action) {
-      command.action({
-        exit: () => renderer.destroy()
-      })
+      try {
+        command.action({
+          exit: () => renderer.destroy()
+        })
+        textarea.setText("")
+      } catch (error) {
+        // If command fails, preserve user input
+        throw error
+      }
     } else {
+      textarea.setText("")
       textarea.insertText(command.value + "")
     }
   }, [renderer])
