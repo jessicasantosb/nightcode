@@ -4,7 +4,10 @@ const COMMAND_REGISTRY: Record<string, Command> = {
   "/new": {
     name: "new",
     description: "Start a new conversation",
-    value: "/new"
+    value: "/new",
+    action: (ctx) => {
+      ctx.toast.show({message: 'Starting new conversation', variant: "info"})
+    }
   },
   "/exit": {
     name: "exit",

@@ -5,6 +5,7 @@ import { useRenderer } from "@opentui/react"
 import { useCommandMenu } from "./command-menu/use-command-menu"
 import type { Command } from "./command-menu/types"
 import { CommandMenu } from "./command-menu"
+import { useToast } from "../providers/toast"
 
 type InputBarProps = {
   onSubmit: (text: string) => void
@@ -21,6 +22,7 @@ export const TEXTAREA_KEY_BINDINGS: KeyBinding[] = [
 export const InputBar = ({ onSubmit, disabled = false }: InputBarProps) => {
   const textareaRef = useRef<TextareaRenderable>(null)
   const renderer = useRenderer()
+  const toast = useToast()
 
   const {
     showCommandMenu,
@@ -40,7 +42,8 @@ export const InputBar = ({ onSubmit, disabled = false }: InputBarProps) => {
     if (command.action) {
       try {
         command.action({
-          exit: () => renderer.destroy()
+          exit: () => renderer.destroy(),
+          toast
         })
         textarea.setText("")
       } catch (error) {
@@ -50,7 +53,7 @@ export const InputBar = ({ onSubmit, disabled = false }: InputBarProps) => {
       textarea.setText("")
       textarea.insertText(command.value + "")
     }
-  }, [renderer])
+  }, [renderer, toast])
 
   const handleCommandExecute = useCallback((index: number) => {
     const command = resolveCommand(index)
