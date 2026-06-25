@@ -6,6 +6,8 @@ import { useCommandMenu } from "./command-menu/use-command-menu"
 import type { Command } from "./command-menu/types"
 import { CommandMenu } from "./command-menu"
 import { useToast } from "../providers/toast"
+import { useKeyboardLayer } from "../providers/keybord-layer"
+import { useDialog } from "../providers/dialog"
 
 type InputBarProps = {
   onSubmit: (text: string) => void
@@ -23,6 +25,8 @@ export const InputBar = ({ onSubmit, disabled = false }: InputBarProps) => {
   const textareaRef = useRef<TextareaRenderable>(null)
   const renderer = useRenderer()
   const toast = useToast()
+  const dialog = useDialog()
+  const { isTopLayer, setResponder } = useKeyboardLayer()
 
   const {
     showCommandMenu,
@@ -43,7 +47,8 @@ export const InputBar = ({ onSubmit, disabled = false }: InputBarProps) => {
       try {
         command.action({
           exit: () => renderer.destroy(),
-          toast
+          toast,
+          dialog
         })
         textarea.setText("")
       } catch (error) {
@@ -102,6 +107,20 @@ export const InputBar = ({ onSubmit, disabled = false }: InputBarProps) => {
       }
     }, [submitHandler])
 
+  useEffect(() => {
+    setResponder("base", () => {
+      if (disabled) return false
+      const textarea = textareaRef.current
+      if (textarea && textarea.plainText.length > 0) {
+        textarea.setText("")
+        return true
+      }
+      return false
+    })
+
+    return () => setResponder("base", null)
+  },[disabled, setResponder])
+
   return (
       <box width="100%">
         <box
@@ -126,7 +145,7 @@ export const InputBar = ({ onSubmit, disabled = false }: InputBarProps) => {
           <box width="100%" paddingX={2} paddingY={1} gap={1}>
             <textarea
               ref={textareaRef}
-              focused={!disabled}
+              focused={!disabled && (isTopLayer("base") || isTopLayer("command"))}
               keyBindings={TEXTAREA_KEY_BINDINGS}
               onContentChange={handleTextareaContentChange}
               placeholder={'Ask anything... "Fix a bug in the database"'}

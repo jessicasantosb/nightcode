@@ -3,6 +3,7 @@ import { useCallback, useMemo, useRef, useState, type RefObject } from "react"
 import type { ScrollBoxRenderable } from "@opentui/core"
 import type { Command } from "./types"
 import { getFilteredCommands } from "./filter-commands"
+import { useKeyboardLayer } from "../../providers/keybord-layer"
 
 type UseCommandMenuReturnProps = {
   showCommandMenu: boolean
@@ -20,6 +21,7 @@ export const useCommandMenu = (): UseCommandMenuReturnProps => {
   const [showCommandMenu, setShowCommandMenu] = useState(false)
 
   const scrollRef = useRef<ScrollBoxRenderable>(null)
+  const { pop, push, isTopLayer } = useKeyboardLayer()
 
   const commandQuery = showCommandMenu && textValue.startsWith("/") ? textValue.slice(1) : ""
 
@@ -36,23 +38,33 @@ export const useCommandMenu = (): UseCommandMenuReturnProps => {
 
     if (prefix !== null && !prefix.includes(" ")) {
       setShowCommandMenu(true)
+      push("command", () => {
+        setShowCommandMenu(false)
+        pop("command")
+        return true
+      })
     } else {
       setShowCommandMenu(false)
+      pop("command")
     }
   }, [])
 
   const resolveCommand = useCallback((index: number): Command | undefined => {
     const command = filteredCommands[index]
-    if (command) setShowCommandMenu(false)
+    if (command) {
+      setShowCommandMenu(false)
+      pop("command")
+    }
     return command
   }, [filteredCommands])
 
   useKeyboard((key) => {
-    if (!showCommandMenu) return
+    if (!showCommandMenu || !isTopLayer("command")) return
 
     if (key.name === "escape") {
       key.preventDefault()
       setShowCommandMenu(false)
+      pop("command")
     } else if (key.name === "up") {
       key.preventDefault()
       setSelectedIndex((i) => {
